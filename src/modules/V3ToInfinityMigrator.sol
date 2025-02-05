@@ -71,7 +71,7 @@ abstract contract V3ToInfinityMigrator is RouterImmutables {
         }
     }
 
-    /// @dev check that the cl position manager call is a safe call
+    /// @dev check that the infinity cl position manager call is a safe call
     /// of the position-altering Actions, we only allow Actions.MINT
     /// this is because, if a user could be tricked into approving the UniversalRouter for
     /// their position, an attacker could take their fees, or drain their entire position
@@ -105,7 +105,7 @@ abstract contract V3ToInfinityMigrator is RouterImmutables {
         }
     }
 
-    /// @dev check that the bin position manager call is a safe call
+    /// @dev check that the infinity bin position manager call is a safe call
     /// of the position-altering Actions, we only allow Actions.BIN_ADD_LIQUIDITY
     /// this is because, if a user could be tricked into approving the UniversalRouter for
     /// their position, an attacker could drain their entire position
