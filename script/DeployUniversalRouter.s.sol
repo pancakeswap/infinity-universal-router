@@ -11,6 +11,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract DeployUniversalRouter is Script {
     RouterParameters internal params;
+    address internal owner = address(0);
     address internal unsupported;
     address internal create3Factory; // from https://github.com/pancakeswap/pancake-create3-factory
 
@@ -64,7 +65,7 @@ abstract contract DeployUniversalRouter is Script {
 
         /// Prepare the payload to transfer ownership to deployer.
         /// @dev deployer must call acceptOwnership after to be the owner
-        address owner = vm.addr(deployerPrivateKey);
+        if (owner == address(0)) revert("owner not set");
         console.log("universal router owner:", owner);
 
         bytes memory afterDeploymentExecutionPayload = abi.encodeWithSelector(Ownable.transferOwnership.selector, owner);
