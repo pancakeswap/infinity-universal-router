@@ -17,7 +17,7 @@ import {RouterParameters} from "../../../src/base/RouterImmutables.sol";
 contract DeployBscTestnet is DeployUniversalRouter {
     /// @notice contract address will be based on deployment salt
     function getDeploymentSalt() public pure override returns (bytes32) {
-        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/0.90");
+        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/0.97");
     }
 
     // ref from v3 universal router: https://testnet.bscscan.com/tx/0xdfab014e4f5df56d5a8b16375028ad0340f80070bd848eb57c4e0baf41210487
@@ -32,12 +32,12 @@ contract DeployBscTestnet is DeployUniversalRouter {
             v3InitCodeHash: 0x6ce8eb472fa82df5469c6ab6d485f17c3ad13c8cd7af59b3d4a8026c5ce0f7e2,
             stableFactory: 0xe6A00f8b819244e8Ab9Ea930e46449C2F20B6609,
             stableInfo: 0x0A548d59D04096Bc01206D58C3D63c478e1e06dB,
-            infiVault: 0xd557753bde3f0EaF32626F8681Ac6d8c1EBA2BBa,
-            infiClPoolManager: 0x70890E308DCE727180ac1B9550928fED342dea52,
-            infiBinPoolManager: 0x68554d088F3640Bd2A7B38b43AE70FDcc16ef197,
+            infiVault: 0x2CdB3EC82EE13d341Dc6E73637BE0Eab79cb79dD,
+            infiClPoolManager: 0x36A12c70c9Cf64f24E89ee132BF93Df2DCD199d4,
+            infiBinPoolManager: 0xe71d2e0230cE0765be53A8A1ee05bdACF30F296B,
             v3NFTPositionManager: 0x427bF5b37357632377eCbEC9de3626C71A5396c1,
-            infiClPositionManager: 0x7E7856fBE18cd868dc9E2C161a7a78c53074D106,
-            infiBinPositionManager: 0x69317a4bF9Cd6bED6ea9b5C61ebcf78b5994A63E
+            infiClPositionManager: 0x77DedB52EC6260daC4011313DBEE09616d30d122,
+            infiBinPositionManager: 0x68B834232da911c787bcF782CED84ec5d36909a7
         });
 
         unsupported = 0xe4da88F38C11C1450c720b8aDeDd94956610a4e5;
