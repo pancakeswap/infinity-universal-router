@@ -19,7 +19,6 @@ import {QaSwapRouter} from "../src/QaSwapRouter.sol";
  *     --verify
  */
 contract DeployQaSwapRouter is Script {
-
     IVault vault = IVault(0x2CdB3EC82EE13d341Dc6E73637BE0Eab79cb79dD);
     ICLPoolManager clPoolManager = ICLPoolManager(0x36A12c70c9Cf64f24E89ee132BF93Df2DCD199d4);
     IBinPoolManager binPoolManager = IBinPoolManager(0xe71d2e0230cE0765be53A8A1ee05bdACF30F296B);
