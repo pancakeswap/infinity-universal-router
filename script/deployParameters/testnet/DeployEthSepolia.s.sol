@@ -10,9 +10,8 @@ import {RouterParameters} from "../../../src/base/RouterImmutables.sol";
  *     --rpc-url $RPC_URL \
  *     --broadcast \
  *     --slow
- *
- * Step 2: Verify - example_args.txt is the constructor arguments in the form of (args1, args2, args)
- * forge verify-contract <address> UniversalRouter --watch --chain 11155111 --constructor-args-path ./script/deployParameters/testnet/args/eth_sepolia.txt
+ *     --slow \
+ *     --verify
  */
 contract DeployEthSepolia is DeployUniversalRouter {
     /// @notice contract address will be based on deployment salt
