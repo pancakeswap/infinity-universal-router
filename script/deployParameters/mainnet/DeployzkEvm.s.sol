@@ -9,10 +9,8 @@ import {RouterParameters} from "../../../src/base/RouterImmutables.sol";
  * forge script script/deployParameters/mainnet/DeployzkEvm.s.sol:DeployZkEvm -vvv \
  *     --rpc-url $RPC_URL \
  *     --broadcast \
- *     --slow
- *
- * Step 2: Verify - example_args.txt is the constructor arguments in the form of (args1, args2, args)
- * forge verify-contract <address> UniversalRouter --watch --chain 1101 --constructor-args-path example_args.txt
+ *     --slow \
+ *     --verify
  */
 contract DeployZkEvm is DeployUniversalRouter {
     /// @notice contract address will be based on deployment salt

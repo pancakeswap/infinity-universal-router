@@ -9,10 +9,8 @@ import {RouterParameters} from "../../../src/base/RouterImmutables.sol";
  * forge script script/deployParameters/testnet/DeployBscTestnet.s.sol:DeployBscTestnet -vvv \
  *     --rpc-url $RPC_URL \
  *     --broadcast \
- *     --slow
- *
- * Step 2: Verify - example_args.txt is the constructor arguments in the form of (args1, args2, args)
- * forge verify-contract <address> UniversalRouter --watch --chain 97 --constructor-args-path ./script/deployParameters/testnet/args/bsc_testnet.txt
+ *     --slow \
+ *     --verify
  */
 contract DeployBscTestnet is DeployUniversalRouter {
     /// @notice contract address will be based on deployment salt
