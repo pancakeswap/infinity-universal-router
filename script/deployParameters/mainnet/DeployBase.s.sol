@@ -15,7 +15,7 @@ import {RouterParameters} from "../../../src/base/RouterImmutables.sol";
 contract DeployBase is DeployUniversalRouter {
     /// @notice contract address will be based on deployment salt
     function getDeploymentSalt() public pure override returns (bytes32) {
-        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/0.0001");
+        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/1.0.0");
     }
 
     function setUp() public override {
@@ -29,12 +29,12 @@ contract DeployBase is DeployUniversalRouter {
             v3InitCodeHash: 0x6ce8eb472fa82df5469c6ab6d485f17c3ad13c8cd7af59b3d4a8026c5ce0f7e2,
             stableFactory: UNSUPPORTED_PROTOCOL,
             stableInfo: UNSUPPORTED_PROTOCOL,
-            infiVault: UNSUPPORTED_PROTOCOL,
-            infiClPoolManager: UNSUPPORTED_PROTOCOL,
-            infiBinPoolManager: UNSUPPORTED_PROTOCOL,
-            v3NFTPositionManager: UNSUPPORTED_PROTOCOL,
-            infiClPositionManager: UNSUPPORTED_PROTOCOL,
-            infiBinPositionManager: UNSUPPORTED_PROTOCOL
+            infiVault: 0x238a358808379702088667322f80aC48bAd5e6c4,
+            infiClPoolManager: 0xa0FfB9c1CE1Fe56963B0321B32E7A0302114058b,
+            infiBinPoolManager: 0xC697d2898e0D09264376196696c51D7aBbbAA4a9,
+            v3NFTPositionManager: 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364,
+            infiClPositionManager: 0x55f4c8abA71A1e923edC303eb4fEfF14608cC226,
+            infiBinPositionManager: 0x3D311D6283Dd8aB90bb0031835C8e606349e2850
         });
 
         unsupported = 0x64D74e1EAAe3176744b5767b93B7Bee39Cf7898F;

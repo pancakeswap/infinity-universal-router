@@ -28,34 +28,15 @@ export RPC_URL=https://
 // private key need to be prefixed with 0x
 export PRIVATE_KEY=0x
 
+// optional. Only set if you want to verify contract on explorer
+export ETHERSCAN_API_KEY=xx
+
 // replace with the respective chain eg. DeployArbitrum.s.sol:DeployArbitrum
 forge script script/deployParameters/DeployArbitrum.s.sol:DeployArbitrum -vvv \
     --rpc-url $RPC_URL \
     --broadcast \
-    --slow 
+    --slow \
+    --verify
 ``` 
 
 Remember to call `.acceptOwnership()` to be the owner of universal router
-
-## Verifying
-
-Each script includes a verification command. Verification needs to be performed separately since the contract is deployed using the create3 method.
-
-```bash
-export ETHERSCAN_API_KEY=xx
-
-forge verify-contract <address> UniversalRouter --watch --chain 97 --constructor-args-path example_args.txt
-```
-
-The file `example_args.txt` contains all the parameters specified in RouterParams.
-
-Example
-```solidity
-params = RouterParameters({
-    permit2: 0x31c2F6fcFf4F8759b3Bd5Bf0e1084A055615c768,
-    weth9: 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd,
-    ...
-})
-```
-
-then `example_args.txt` would be (0x31c2F6fcFf4F8759b3Bd5Bf0e1084A055615c768, 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd,...)
