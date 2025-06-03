@@ -142,6 +142,26 @@ abstract contract StableSwapTest is Test {
         assertGt(ERC20(token0()).balanceOf(FROM), BALANCE);
     }
 
+    function test_stableSwap_ExactInput0For1_Twice_FromRouter() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        deal(token0(), address(router), AMOUNT * 2);
+
+        address[] memory path = new address[](2);
+        path[0] = token0();
+        path[1] = token1();
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        // recipient, amountIn, amountOutMin, path, flag, payerIsUser
+        bytes[] memory inputs = new bytes[](2);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path, flag(), false);
+        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path, flag(), false);
+
+        router.execute(commands, inputs);
+        assertEq(ERC20(token0()).balanceOf(FROM), BALANCE); // no token0 taken from user, taken from router
+        assertGt(ERC20(token1()).balanceOf(FROM), BALANCE); // token1 received
+    }
+
+
     function test_stableSwap_exactInput0For1FromRouter() public {
         bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
         deal(token0(), address(router), AMOUNT);
@@ -248,6 +268,24 @@ abstract contract StableSwapTest is Test {
 
         router.execute(commands, inputs);
         assertGe(ERC20(token0()).balanceOf(FROM), BALANCE + AMOUNT);
+        assertEq(ERC20(token1()).balanceOf(FROM), BALANCE); // no token1 taken from user, taken from router
+    }
+
+    function test_stableSwap_exactOutput1For0FromRouter_Twice_FromRouter() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)));
+        deal(token1(), address(router), BALANCE * 2);
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        address[] memory path = new address[](2);
+        path[0] = token1();
+        path[1] = token0();
+
+        bytes[] memory inputs = new bytes[](2);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, type(uint256).max, path, flag(), false);
+        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, type(uint256).max, path, flag(), false);
+
+        router.execute(commands, inputs);
+        assertGe(ERC20(token0()).balanceOf(FROM), BALANCE + AMOUNT * 2);
         assertEq(ERC20(token1()).balanceOf(FROM), BALANCE); // no token1 taken from user, taken from router
     }
 

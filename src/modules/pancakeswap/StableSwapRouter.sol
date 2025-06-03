@@ -45,16 +45,25 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         emit SetStableSwap(stableSwapFactory, stableSwapInfo);
     }
 
-    function _stableSwap(address[] calldata path, uint256[] calldata flag) private {
+    function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn) private {
         unchecked {
             if (path.length - 1 != flag.length) revert StableInvalidPath();
 
             for (uint256 i; i < flag.length; i++) {
                 (address input, address output) = (path[i], path[i + 1]);
+
+                ERC20 tokenOut = ERC20(path[i+ 1]);
+                uint256 balanceBefore = tokenOut.balanceOf(address(this));
+
                 (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
-                uint256 amountIn = ERC20(input).balanceOf(address(this));
                 ERC20(input).safeApprove(swapContract, amountIn);
                 IStableSwap(swapContract).exchange(k, j, amountIn, 0);
+
+                if (i != flag.length - 1) {
+                    // not last swap, we need to update amountIn for the next hop
+                    // we do this as swapContract do not return the output amount
+                    amountIn = tokenOut.balanceOf(address(this)) - balanceBefore;
+                }
             }
         }
     }
@@ -74,14 +83,16 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         uint256[] calldata flag,
         address payer
     ) internal {
-        if (amountIn != Constants.ALREADY_PAID && amountIn != ActionConstants.CONTRACT_BALANCE) {
+        if (amountIn != ActionConstants.CONTRACT_BALANCE) {
             payOrPermit2Transfer(path[0], payer, address(this), amountIn);
+        } else {
+            amountIn = ERC20(path[0]).balanceOf(address(this));
         }
 
         ERC20 tokenOut = ERC20(path[path.length - 1]);
         uint256 balanceBefore = tokenOut.balanceOf(address(this));
 
-        _stableSwap(path, flag);
+        _stableSwap(path, flag, amountIn);
 
         uint256 amountOut = tokenOut.balanceOf(address(this)) - balanceBefore;
         if (amountOut < amountOutMinimum) revert StableTooLittleReceived();
@@ -106,7 +117,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
     ) internal {
         payOrPermit2Transfer(path[0], payer, address(this), amountIn);
 
-        _stableSwap(path, flag);
+        _stableSwap(path, flag, amountIn);
 
         if (recipient != address(this)) pay(path[path.length - 1], recipient, amountOut);
     }
