@@ -1,9 +1,9 @@
 {
-  "test_infiBinSwap_ExactInSingle": "144330",
-  "test_infiBinSwap_ExactIn_MultiHop": "176210",
-  "test_infiBinSwap_ExactIn_SingleHop": "146128",
-  "test_infiBinSwap_ExactOutSingle": "148584",
-  "test_infiBinSwap_ExactOut_MultiHop": "179842",
-  "test_infiBinSwap_ExactOut_SingleHop": "150392",
+  "test_infiBinSwap_ExactInSingle": "144336",
+  "test_infiBinSwap_ExactIn_MultiHop": "176216",
+  "test_infiBinSwap_ExactIn_SingleHop": "146134",
+  "test_infiBinSwap_ExactOutSingle": "148590",
+  "test_infiBinSwap_ExactOut_MultiHop": "179848",
+  "test_infiBinSwap_ExactOut_SingleHop": "150398",
   "test_infiBinSwap_InitializeBinPool": "152986"
 }

@@ -52,7 +52,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
             for (uint256 i; i < flag.length; i++) {
                 (address input, address output) = (path[i], path[i + 1]);
 
-                ERC20 tokenOut = ERC20(path[i+ 1]);
+                ERC20 tokenOut = ERC20(path[i + 1]);
                 uint256 balanceBefore = tokenOut.balanceOf(address(this));
 
                 (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
@@ -83,9 +83,11 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         uint256[] calldata flag,
         address payer
     ) internal {
-        if (amountIn != ActionConstants.CONTRACT_BALANCE) {
+        if (amountIn != Constants.ALREADY_PAID && amountIn != ActionConstants.CONTRACT_BALANCE) {
             payOrPermit2Transfer(path[0], payer, address(this), amountIn);
-        } else {
+        }
+
+        if (amountIn == ActionConstants.CONTRACT_BALANCE) {
             amountIn = ERC20(path[0]).balanceOf(address(this));
         }
 
