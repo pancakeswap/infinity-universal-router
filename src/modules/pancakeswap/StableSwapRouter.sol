@@ -45,14 +45,19 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         emit SetStableSwap(stableSwapFactory, stableSwapInfo);
     }
 
-    function _stableSwap(address[] calldata path, uint256[] calldata flag) private {
+    function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn) private {
         unchecked {
             if (path.length - 1 != flag.length) revert StableInvalidPath();
 
             for (uint256 i; i < flag.length; i++) {
                 (address input, address output) = (path[i], path[i + 1]);
+                // if i is 0 and amountIn is not CONTRACT_BALANCE, we use amountIn directly
+                // if i is not 0, we use the balance of the input token in the contract
+                if(i != 0 || amountIn == ActionConstants.CONTRACT_BALANCE){
+			        amountIn = ERC20(input).balanceOf(address(this));
+                }
                 (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
-                uint256 amountIn = ERC20(input).balanceOf(address(this));
+                // uint256 amountIn = ERC20(input).balanceOf(address(this));
                 ERC20(input).safeApprove(swapContract, amountIn);
                 IStableSwap(swapContract).exchange(k, j, amountIn, 0);
             }
@@ -81,7 +86,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         ERC20 tokenOut = ERC20(path[path.length - 1]);
         uint256 balanceBefore = tokenOut.balanceOf(address(this));
 
-        _stableSwap(path, flag);
+        _stableSwap(path, flag, amountIn);
 
         uint256 amountOut = tokenOut.balanceOf(address(this)) - balanceBefore;
         if (amountOut < amountOutMinimum) revert StableTooLittleReceived();
@@ -106,7 +111,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
     ) internal {
         payOrPermit2Transfer(path[0], payer, address(this), amountIn);
 
-        _stableSwap(path, flag);
+        _stableSwap(path, flag, amountIn);
 
         if (recipient != address(this)) pay(path[path.length - 1], recipient, amountOut);
     }
