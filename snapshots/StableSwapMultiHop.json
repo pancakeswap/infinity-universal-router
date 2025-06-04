@@ -1,0 +1,8 @@
+{
+  "test_stableSwap_ExactInput0For1_DualAction_FromRouter": "284914",
+  "test_stableSwap_ExactInput0For1_DualAction_FromUser": "311144",
+  "test_stableSwap_ExactInput0For1_MultiHop_FromRouter": "281742",
+  "test_stableSwap_ExactInput0For1_MultiHop_FromUser": "307972",
+  "test_stableSwap_ExactInput0For1_SamePath_FromRouter": "246522",
+  "test_stableSwap_ExactInput0For1_SamePath_FromUser": "292183"
+}
