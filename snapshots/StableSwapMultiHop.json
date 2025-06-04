@@ -4,5 +4,8 @@
   "test_stableSwap_ExactInput0For1_MultiHop_FromRouter": "281742",
   "test_stableSwap_ExactInput0For1_MultiHop_FromUser": "307972",
   "test_stableSwap_ExactInput0For1_SamePath_FromRouter": "246522",
-  "test_stableSwap_ExactInput0For1_SamePath_FromUser": "292183"
+  "test_stableSwap_ExactInput0For1_SamePath_FromUser": "292183",
+  "test_stableSwap_ExactOut0For1_MultiHop_FromUser": "354076",
+  "test_stableSwap_ExactOutput0For1_MultiHop_FromRouter": "327846",
+  "test_stableSwap_ExactOutput0For1_SamePath_FromRouter": "291659"
 }

@@ -221,4 +221,80 @@ contract StableSwapMultiHop is Test {
         assertEq(ERC20(address(USDC)).balanceOf(FROM), BALANCE - (AMOUNT * 4));
         assertEq(ERC20(address(USDT)).balanceOf(FROM), 100003996633124466009871); // roughly 3.9966331244 recieved from swap
     }
+
+    function test_stableSwap_ExactOutput0For1_SamePath_FromRouter() public {
+        bytes memory commands =
+            abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)));
+
+        uint256 AMOUNT_IN = 1 ether;
+        deal(address(USDC), address(router), AMOUNT_IN * 4);
+
+        uint256[] memory flag = new uint256[](1);
+        flag[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
+
+        address[] memory path = new address[](2);
+        path[0] = address(USDC);
+        path[1] = address(USDT);
+
+        bytes[] memory inputs = new bytes[](2);
+        // (recipient, amountOut, amountInMax, path, flag, payerIsUser)
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, 0.9 ether, AMOUNT_IN, path, flag, false);
+        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, 0.9 ether * 3, AMOUNT_IN * 3, path, flag, false);
+
+        router.execute(commands, inputs);
+        vm.snapshotGasLastCall("test_stableSwap_ExactOutput0For1_SamePath_FromRouter");
+        assertEq(ERC20(address(USDT)).balanceOf(FROM), 100003600000000000000000); // exactly 3.6 usdt received 
+    }
+
+    function test_stableSwap_ExactOutput0For1_MultiHop_FromRouter() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)));
+
+        uint256 AMOUNT_IN = 1 ether;
+        deal(address(USDC), address(router), AMOUNT_IN);
+
+        uint256[] memory flag = new uint256[](2);
+        flag[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
+        flag[1] = 2; // 2 is the flag to indicate StableSwapTwoPool
+
+        address[] memory path = new address[](3);
+        path[0] = address(USDC);
+        path[1] = address(USDT);
+        path[2] = address(BUSD);
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        bytes[] memory inputs = new bytes[](1);
+        // (recipient, amountOut, amountInMax, path, flag, payerIsUser)
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, 0.9 ether, AMOUNT_IN, path, flag, false);
+
+        router.execute(commands, inputs);
+        vm.snapshotGasLastCall("test_stableSwap_ExactOutput0For1_MultiHop_FromRouter");
+        assertEq(ERC20(address(USDC)).balanceOf(FROM), BALANCE); // no token0 taken from user, taken from router
+        assertEq(ERC20(address(USDC)).balanceOf(address(router)), 99791314908871029); // roughly 0.9 usdc taken from router, leaving 0.1 left
+        assertEq(ERC20(address(BUSD)).balanceOf(FROM), 100000900000000000000000); // exactly 0.9 busd received
+    }
+
+    function test_stableSwap_ExactOut0For1_MultiHop_FromUser() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)));
+
+        uint256 AMOUNT_IN = 1 ether;
+
+        uint256[] memory flag = new uint256[](2);
+        flag[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
+        flag[1] = 2; // 2 is the flag to indicate StableSwapTwoPool
+
+        address[] memory path = new address[](3);
+        path[0] = address(USDC);
+        path[1] = address(USDT);
+        path[2] = address(BUSD);
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        bytes[] memory inputs = new bytes[](1);
+        // (recipient, amountOut, amountInMax, path, flag, payerIsUser)
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER,0.9 ether, AMOUNT_IN, path, flag, true);
+
+        router.execute(commands, inputs);
+        vm.snapshotGasLastCall("test_stableSwap_ExactOut0For1_MultiHop_FromUser");
+        assertEq(ERC20(address(USDC)).balanceOf(FROM), 99999099791314908871029); // roughly 0.9 usdc taken from user 
+        assertEq(ERC20(address(BUSD)).balanceOf(FROM), 100000900000000000000000); // exactly 0.9 busd received
+    }
 }
