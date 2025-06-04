@@ -356,9 +356,10 @@ contract StableSwapMultiHop is Test {
 
         bytes[] memory inputs = new bytes[](3);
         // recipient, amountIn, amountOutMinimum, path, flag, payerIsUser
-        inputs[0] = abi.encode(ActionConstants.ADDRESS_THIS, AMOUNT, 0, path1, flag1, false);
-        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path2, flag2, false);
-        inputs[2] = abi.encode(ActionConstants.MSG_SENDER, ActionConstants.CONTRACT_BALANCE, 0, path3, flag3, false);
+        inputs[0] = abi.encode(ActionConstants.ADDRESS_THIS, AMOUNT, 0.9 ether, path1, flag1, false);
+        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0.9 ether, path2, flag2, false);
+        inputs[2] =
+            abi.encode(ActionConstants.MSG_SENDER, ActionConstants.CONTRACT_BALANCE, 0.9 ether, path3, flag3, false);
 
         router.execute(commands, inputs);
         vm.snapshotGasLastCall("test_stableSwap_ExactInput0For1_MultiCommand_FromRouter");
