@@ -1,11 +1,11 @@
 {
-  "test_stableSwap_ExactInput0For1_DualAction_FromRouter": "284906",
-  "test_stableSwap_ExactInput0For1_DualAction_FromUser": "311136",
-  "test_stableSwap_ExactInput0For1_MultiHop_FromRouter": "281493",
-  "test_stableSwap_ExactInput0For1_MultiHop_FromUser": "307724",
+  "test_stableSwap_ExactInput0For1_DualAction_FromRouter": "284916",
+  "test_stableSwap_ExactInput0For1_DualAction_FromUser": "311151",
+  "test_stableSwap_ExactInput0For1_MultiHop_FromRouter": "281403",
+  "test_stableSwap_ExactInput0For1_MultiHop_FromUser": "307638",
   "test_stableSwap_ExactInput0For1_SamePath_FromRouter": "246514",
-  "test_stableSwap_ExactInput0For1_SamePath_FromUser": "292175",
-  "test_stableSwap_ExactOut0For1_MultiHop_FromUser": "353828",
-  "test_stableSwap_ExactOutput0For1_MultiHop_FromRouter": "327597",
-  "test_stableSwap_ExactOutput0For1_SamePath_FromRouter": "291651"
+  "test_stableSwap_ExactInput0For1_SamePath_FromUser": "292184",
+  "test_stableSwap_ExactOut0For1_MultiHop_FromUser": "355264",
+  "test_stableSwap_ExactOutput0For1_MultiHop_FromRouter": "329029",
+  "test_stableSwap_ExactOutput0For1_SamePath_FromRouter": "294699"
 }

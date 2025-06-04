@@ -47,27 +47,27 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
 
     /// @dev if a single hop, path would be of size 2, and flag would be of size 1
     /// if 2 hops, path would be of size 3, and flag would be of size 2
-    function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn) private {
+    /// @return amtOut The amount of output tokens received after the swap
+    function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn) private returns (uint256 amtOut) {
         if (path.length - 1 != flag.length) revert StableInvalidPath();
 
         uint256 outputTokenBal;
         for (uint256 i; i < flag.length; i++) {
             (address input, address output) = (path[i], path[i + 1]);
 
-            bool isLastHop = i == flag.length - 1;
-            if (!isLastHop) {
-                outputTokenBal = ERC20(output).balanceOf(address(this));
-            }
+            outputTokenBal = ERC20(output).balanceOf(address(this));
 
             (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
             ERC20(input).safeApprove(swapContract, amountIn);
             IStableSwap(swapContract).exchange(k, j, amountIn, 0);
 
-            if (!isLastHop) {
-                // if not last swap, update amountIn for the next hop. this is done as swapContract do not return the output amount
-                amountIn = ERC20(output).balanceOf(address(this)) - outputTokenBal;
-            }
+            // Update amountIn for the next hop. this is done as swapContract do not return the output amount
+            // If this is the last hop, amountIn is the output amount
+            amountIn = ERC20(output).balanceOf(address(this)) - outputTokenBal;
         }
+
+        // after the swap iterations, amountIn is the output amount
+        amtOut = amountIn;
     }
 
     /// @notice Performs a PancakeSwap stable exact input swap
@@ -94,11 +94,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         }
 
         ERC20 tokenOut = ERC20(path[path.length - 1]);
-        uint256 balanceBefore = tokenOut.balanceOf(address(this));
-
-        _stableSwap(path, flag, amountIn);
-
-        uint256 amountOut = tokenOut.balanceOf(address(this)) - balanceBefore;
+        uint256 amountOut = _stableSwap(path, flag, amountIn);
         if (amountOut < amountOutMinimum) revert StableTooLittleReceived();
 
         if (recipient != address(this)) pay(address(tokenOut), recipient, amountOut);
