@@ -96,11 +96,11 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
             amountIn = ERC20(path[0]).balanceOf(address(this));
         }
 
-        ERC20 tokenOut = ERC20(path[path.length - 1]);
         uint256 amountOut = _stableSwap(path, flag, amountIn);
         if (amountOut < amountOutMinimum) revert StableTooLittleReceived();
 
-        if (recipient != address(this)) pay(address(tokenOut), recipient, amountOut);
+        address tokenOut = path[path.length - 1];
+        if (recipient != address(this)) pay(tokenOut, recipient, amountOut);
     }
 
     /// @notice Performs a PancakeSwap stable exact output swap
