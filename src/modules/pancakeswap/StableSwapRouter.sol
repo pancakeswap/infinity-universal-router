@@ -45,25 +45,27 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         emit SetStableSwap(stableSwapFactory, stableSwapInfo);
     }
 
+    /// @dev if a single hop, path would be of size 2, and flag would be of size 1
+    /// if 2 hops, path would be of size 3, and flag would be of size 2
     function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn) private {
-        unchecked {
-            if (path.length - 1 != flag.length) revert StableInvalidPath();
+        if (path.length - 1 != flag.length) revert StableInvalidPath();
 
-            for (uint256 i; i < flag.length; i++) {
-                (address input, address output) = (path[i], path[i + 1]);
+        uint256 balanceBefore;
+        for (uint256 i; i < flag.length; i++) {
+            (address input, address output) = (path[i], path[i + 1]);
 
-                ERC20 tokenOut = ERC20(path[i + 1]);
-                uint256 balanceBefore = tokenOut.balanceOf(address(this));
+            bool isLastHop = i == flag.length - 1;
+            if (!isLastHop) {
+                balanceBefore = ERC20(path[i + 1]).balanceOf(address(this));
+            }
 
-                (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
-                ERC20(input).safeApprove(swapContract, amountIn);
-                IStableSwap(swapContract).exchange(k, j, amountIn, 0);
+            (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
+            ERC20(input).safeApprove(swapContract, amountIn);
+            IStableSwap(swapContract).exchange(k, j, amountIn, 0);
 
-                if (i != flag.length - 1) {
-                    // not last swap, we need to update amountIn for the next hop
-                    // we do this as swapContract do not return the output amount
-                    amountIn = tokenOut.balanceOf(address(this)) - balanceBefore;
-                }
+            if (!isLastHop) {
+                // if not last swap, update amountIn for the next hop. this is done as swapContract do not return the output amount
+                amountIn = ERC20(path[i + 1]).balanceOf(address(this)) - balanceBefore;
             }
         }
     }
