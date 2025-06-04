@@ -223,8 +223,9 @@ contract StableSwapMultiHop is Test {
     }
 
     function test_stableSwap_ExactOutput0For1_SamePath_FromRouter() public {
-        bytes memory commands =
-            abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)));
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT))
+        );
 
         uint256 AMOUNT_IN = 1 ether;
         deal(address(USDC), address(router), AMOUNT_IN * 4);
@@ -243,7 +244,7 @@ contract StableSwapMultiHop is Test {
 
         router.execute(commands, inputs);
         vm.snapshotGasLastCall("test_stableSwap_ExactOutput0For1_SamePath_FromRouter");
-        assertEq(ERC20(address(USDT)).balanceOf(FROM), 100003600000000000000000); // exactly 3.6 usdt received 
+        assertEq(ERC20(address(USDT)).balanceOf(FROM), 100003600000000000000000); // exactly 3.6 usdt received
     }
 
     function test_stableSwap_ExactOutput0For1_MultiHop_FromRouter() public {
@@ -290,11 +291,11 @@ contract StableSwapMultiHop is Test {
         // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
         bytes[] memory inputs = new bytes[](1);
         // (recipient, amountOut, amountInMax, path, flag, payerIsUser)
-        inputs[0] = abi.encode(ActionConstants.MSG_SENDER,0.9 ether, AMOUNT_IN, path, flag, true);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, 0.9 ether, AMOUNT_IN, path, flag, true);
 
         router.execute(commands, inputs);
         vm.snapshotGasLastCall("test_stableSwap_ExactOut0For1_MultiHop_FromUser");
-        assertEq(ERC20(address(USDC)).balanceOf(FROM), 99999099791314908871029); // roughly 0.9 usdc taken from user 
+        assertEq(ERC20(address(USDC)).balanceOf(FROM), 99999099791314908871029); // roughly 0.9 usdc taken from user
         assertEq(ERC20(address(BUSD)).balanceOf(FROM), 100000900000000000000000); // exactly 0.9 busd received
     }
 }
