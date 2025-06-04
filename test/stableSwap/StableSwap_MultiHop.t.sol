@@ -319,4 +319,50 @@ contract StableSwapMultiHop is Test {
         assertEq(ERC20(address(USDC)).balanceOf(FROM), 99999099791314908871029); // roughly 0.9 usdc taken from user
         assertEq(ERC20(address(BUSD)).balanceOf(FROM), 100000900000000000000000); // exactly 0.9 busd received
     }
+
+    // 3 commmands
+    // command 1: 1 USDC -> USDT
+    // command 2: 1 USDC -> USDT -> BUSD
+    // command 3: (contract balance from comamnd 1 output) USDT -> BUSD
+    /// @dev This test is to ensure that for multi-hop cases, the next hop input is the output of the previous hop
+    function test_stableSwap_ExactInput0For1_MultiCommand_FromRouter() public {
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)),
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)),
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN))
+        );
+
+        deal(address(USDC), address(router), AMOUNT * 2);
+
+        uint256[] memory flag1 = new uint256[](1);
+        flag1[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
+        address[] memory path1 = new address[](2);
+        path1[0] = address(USDC);
+        path1[1] = address(USDT);
+
+        uint256[] memory flag2 = new uint256[](2);
+        flag2[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
+        flag2[1] = 2; // 2 is the flag to indicate StableSwapTwoPool
+        address[] memory path2 = new address[](3);
+        path2[0] = address(USDC);
+        path2[1] = address(USDT);
+        path2[2] = address(BUSD);
+
+        uint256[] memory flag3 = new uint256[](1);
+        flag3[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
+        address[] memory path3 = new address[](2);
+        path3[0] = address(USDT);
+        path3[1] = address(BUSD);
+
+        bytes[] memory inputs = new bytes[](3);
+        // recipient, amountIn, amountOutMinimum, path, flag, payerIsUser
+        inputs[0] = abi.encode(ActionConstants.ADDRESS_THIS, AMOUNT, 0, path1, flag1, false);
+        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path2, flag2, false);
+        inputs[2] = abi.encode(ActionConstants.MSG_SENDER, ActionConstants.CONTRACT_BALANCE, 0, path3, flag3, false);
+
+        router.execute(commands, inputs);
+        vm.snapshotGasLastCall("test_stableSwap_ExactInput0For1_MultiCommand_FromRouter");
+        assertEq(ERC20(address(USDC)).balanceOf(FROM), BALANCE); // no token0 taken from user, taken from router
+        assertEq(ERC20(address(BUSD)).balanceOf(FROM), 100001999536354145097921); // roughly 1.9995 recieved from swap
+    }
 }
