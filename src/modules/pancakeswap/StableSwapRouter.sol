@@ -50,13 +50,13 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
     function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn) private {
         if (path.length - 1 != flag.length) revert StableInvalidPath();
 
-        uint256 balanceBefore;
+        uint256 outputTokenBal;
         for (uint256 i; i < flag.length; i++) {
             (address input, address output) = (path[i], path[i + 1]);
 
             bool isLastHop = i == flag.length - 1;
             if (!isLastHop) {
-                balanceBefore = ERC20(path[i + 1]).balanceOf(address(this));
+                outputTokenBal = ERC20(path[i + 1]).balanceOf(address(this));
             }
 
             (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
@@ -65,7 +65,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
 
             if (!isLastHop) {
                 // if not last swap, update amountIn for the next hop. this is done as swapContract do not return the output amount
-                amountIn = ERC20(path[i + 1]).balanceOf(address(this)) - balanceBefore;
+                amountIn = ERC20(path[i + 1]).balanceOf(address(this)) - outputTokenBal;
             }
         }
     }
