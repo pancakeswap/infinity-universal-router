@@ -57,7 +57,6 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
 			        amountIn = ERC20(input).balanceOf(address(this));
                 }
                 (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
-                // uint256 amountIn = ERC20(input).balanceOf(address(this));
                 ERC20(input).safeApprove(swapContract, amountIn);
                 IStableSwap(swapContract).exchange(k, j, amountIn, 0);
             }
