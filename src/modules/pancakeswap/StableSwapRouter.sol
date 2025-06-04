@@ -56,7 +56,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
 
             bool isLastHop = i == flag.length - 1;
             if (!isLastHop) {
-                outputTokenBal = ERC20(path[i + 1]).balanceOf(address(this));
+                outputTokenBal = ERC20(output).balanceOf(address(this));
             }
 
             (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
@@ -65,7 +65,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
 
             if (!isLastHop) {
                 // if not last swap, update amountIn for the next hop. this is done as swapContract do not return the output amount
-                amountIn = ERC20(path[i + 1]).balanceOf(address(this)) - outputTokenBal;
+                amountIn = ERC20(output).balanceOf(address(this)) - outputTokenBal;
             }
         }
     }
