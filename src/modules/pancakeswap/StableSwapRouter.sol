@@ -53,8 +53,8 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
                 (address input, address output) = (path[i], path[i + 1]);
                 // if i is 0 and amountIn is not CONTRACT_BALANCE, we use amountIn directly
                 // if i is not 0, we use the balance of the input token in the contract
-                if(i != 0 || amountIn == ActionConstants.CONTRACT_BALANCE){
-			        amountIn = ERC20(input).balanceOf(address(this));
+                if (i != 0 || amountIn == ActionConstants.CONTRACT_BALANCE) {
+                    amountIn = ERC20(input).balanceOf(address(this));
                 }
                 (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
                 ERC20(input).safeApprove(swapContract, amountIn);
