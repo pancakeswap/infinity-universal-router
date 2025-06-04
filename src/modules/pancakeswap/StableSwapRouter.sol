@@ -48,7 +48,10 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
     /// @dev if a single hop, path would be of size 2, and flag would be of size 1
     /// if 2 hops, path would be of size 3, and flag would be of size 2
     /// @return amtOut The amount of output tokens received after the swap
-    function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn) private returns (uint256 amtOut) {
+    function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn)
+        private
+        returns (uint256 amtOut)
+    {
         if (path.length - 1 != flag.length) revert StableInvalidPath();
 
         uint256 outputTokenBal;

@@ -123,6 +123,27 @@ contract StableSwapMultiHop is Test {
         assertEq(ERC20(address(BUSD)).balanceOf(FROM), 100000999768181033551138); // roughly 0.999768181 recieved from swap
     }
 
+    function test_stableSwap_ExactInput0For1_MultiHop_FromUser_StableTooLittleReceived() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+
+        uint256[] memory flag = new uint256[](2);
+        flag[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
+        flag[1] = 2; // 2 is the flag to indicate StableSwapTwoPool
+
+        address[] memory path = new address[](3);
+        path[0] = address(USDC);
+        path[1] = address(USDT);
+        path[2] = address(BUSD);
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        bytes[] memory inputs = new bytes[](1);
+        // should receive 0.999768181 ether
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0.9998 ether, path, flag, true);
+
+        vm.expectRevert(StableSwapRouter.StableTooLittleReceived.selector);
+        router.execute(commands, inputs);
+    }
+
     function test_stableSwap_ExactInput0For1_DualAction_FromRouter() public {
         bytes memory commands =
             abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
