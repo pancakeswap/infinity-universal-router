@@ -33,7 +33,7 @@ contract StableSwapArbTest is Test {
     address public mPENDLE = 0xB688BA096b7Bb75d7841e47163Cd12D18B36A5bF;
 
     function setUp() public {
-        // BSC: May-09-2024 03:05:23 AM +UTC
+        // Arb: Jun-18-2025 08:50:07 AM +UTC
         vm.createSelectFork(vm.envString("ARB_FORK_URL"), 348588274);
 
         RouterParameters memory params = RouterParameters({
