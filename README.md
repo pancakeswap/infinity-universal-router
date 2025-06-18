@@ -9,6 +9,9 @@
 // testnet fork test for infinity, mainnet fork test for v2/v3 
 export FORK_URL=https://bsc-mainnet.nodereal.io/v1/xxx
 export TESTNET_FORK_URL=https://bsc-testnet.nodereal.io/v1/xxx
+
+(If not set, only Arb test will fail)
+export ARB_FORK_URL=https://xxx
 ```
 
 3. Run test with `forge test`
