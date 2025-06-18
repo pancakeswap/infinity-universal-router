@@ -45,18 +45,32 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         emit SetStableSwap(stableSwapFactory, stableSwapInfo);
     }
 
-    function _stableSwap(address[] calldata path, uint256[] calldata flag) private {
-        unchecked {
-            if (path.length - 1 != flag.length) revert StableInvalidPath();
+    /// @dev if a single hop, path would be of size 2, and flag would be of size 1
+    /// if 2 hops, path would be of size 3, and flag would be of size 2
+    /// @return amtOut The amount of output tokens received after the swap
+    function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn)
+        private
+        returns (uint256 amtOut)
+    {
+        if (path.length - 1 != flag.length) revert StableInvalidPath();
 
-            for (uint256 i; i < flag.length; i++) {
-                (address input, address output) = (path[i], path[i + 1]);
-                (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
-                uint256 amountIn = ERC20(input).balanceOf(address(this));
-                ERC20(input).safeApprove(swapContract, amountIn);
-                IStableSwap(swapContract).exchange(k, j, amountIn, 0);
-            }
+        uint256 outputTokenBal;
+        for (uint256 i; i < flag.length; i++) {
+            (address input, address output) = (path[i], path[i + 1]);
+
+            outputTokenBal = ERC20(output).balanceOf(address(this));
+
+            (uint256 k, uint256 j, address swapContract) = stableSwapFactory.getStableInfo(input, output, flag[i]);
+            ERC20(input).safeApprove(swapContract, amountIn);
+            IStableSwap(swapContract).exchange(k, j, amountIn, 0);
+
+            // Update amountIn for the next hop. this is done as swapContract do not return the output amount
+            // If this is the last hop, amountIn is the output amount
+            amountIn = ERC20(output).balanceOf(address(this)) - outputTokenBal;
         }
+
+        // after the swap iterations, amountIn is the output amount
+        amtOut = amountIn;
     }
 
     /// @notice Performs a PancakeSwap stable exact input swap
@@ -78,15 +92,15 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
             payOrPermit2Transfer(path[0], payer, address(this), amountIn);
         }
 
-        ERC20 tokenOut = ERC20(path[path.length - 1]);
-        uint256 balanceBefore = tokenOut.balanceOf(address(this));
+        if (amountIn == ActionConstants.CONTRACT_BALANCE) {
+            amountIn = ERC20(path[0]).balanceOf(address(this));
+        }
 
-        _stableSwap(path, flag);
-
-        uint256 amountOut = tokenOut.balanceOf(address(this)) - balanceBefore;
+        uint256 amountOut = _stableSwap(path, flag, amountIn);
         if (amountOut < amountOutMinimum) revert StableTooLittleReceived();
 
-        if (recipient != address(this)) pay(address(tokenOut), recipient, amountOut);
+        address tokenOut = path[path.length - 1];
+        if (recipient != address(this)) pay(tokenOut, recipient, amountOut);
     }
 
     /// @notice Performs a PancakeSwap stable exact output swap
@@ -106,7 +120,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
     ) internal {
         payOrPermit2Transfer(path[0], payer, address(this), amountIn);
 
-        _stableSwap(path, flag);
+        _stableSwap(path, flag, amountIn);
 
         if (recipient != address(this)) pay(path[path.length - 1], recipient, amountOut);
     }

@@ -15,7 +15,7 @@ import {RouterParameters} from "../../../src/base/RouterImmutables.sol";
 contract DeployArbitrum is DeployUniversalRouter {
     /// @notice contract address will be based on deployment salt
     function getDeploymentSalt() public pure override returns (bytes32) {
-        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/0.0001");
+        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/1.0.1");
     }
 
     function setUp() public override {
@@ -27,8 +27,8 @@ contract DeployArbitrum is DeployUniversalRouter {
             v3Deployer: 0x41ff9AA7e16B8B1a8a8dc4f0eFacd93D02d071c9,
             v2InitCodeHash: 0x57224589c67f3f30a6b0d7a1b54cf3153ab84563bc609ef41dfb34f8b2974d2d,
             v3InitCodeHash: 0x6ce8eb472fa82df5469c6ab6d485f17c3ad13c8cd7af59b3d4a8026c5ce0f7e2,
-            stableFactory: UNSUPPORTED_PROTOCOL,
-            stableInfo: UNSUPPORTED_PROTOCOL,
+            stableFactory: 0x5D5fBB19572c4A89846198c3DBEdB2B6eF58a77a,
+            stableInfo: 0x58B2F00f74a1877510Ec37b22f116Bf5D63Ab1b0,
             infiVault: UNSUPPORTED_PROTOCOL,
             infiClPoolManager: UNSUPPORTED_PROTOCOL,
             infiBinPoolManager: UNSUPPORTED_PROTOCOL,
