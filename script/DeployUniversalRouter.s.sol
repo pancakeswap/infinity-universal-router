@@ -54,10 +54,7 @@ abstract contract DeployUniversalRouter is Script {
             stableInfo: mapUnsupported(params.stableInfo),
             infiVault: mapUnsupported(params.infiVault),
             infiClPoolManager: mapUnsupported(params.infiClPoolManager),
-            infiBinPoolManager: mapUnsupported(params.infiBinPoolManager),
-            v3NFTPositionManager: mapUnsupported(params.v3NFTPositionManager),
-            infiClPositionManager: mapUnsupported(params.infiClPositionManager),
-            infiBinPositionManager: mapUnsupported(params.infiBinPositionManager)
+            infiBinPoolManager: mapUnsupported(params.infiBinPoolManager)
         });
 
         logParams();
@@ -95,9 +92,6 @@ abstract contract DeployUniversalRouter is Script {
         console2.log("infiVault:", params.infiVault);
         console2.log("infiClPoolManager:", params.infiClPoolManager);
         console2.log("infiBinPoolManager:", params.infiBinPoolManager);
-        console2.log("v3NFTPositionManager:", params.v3NFTPositionManager);
-        console2.log("infiClPositionManager:", params.infiClPositionManager);
-        console2.log("infiBinPositionManager:", params.infiBinPositionManager);
     }
 
     function mapUnsupported(address protocol) internal view returns (address) {

@@ -34,10 +34,7 @@ contract DeployEthSepolia is DeployUniversalRouter {
             stableInfo: UNSUPPORTED_PROTOCOL,
             infiVault: 0x4670F769Daa625FF5F89719AE5295E9824f5805f,
             infiClPoolManager: 0xD4EAc75ee0E76EAD6AC6995DF30CA14b38549682,
-            infiBinPoolManager: 0x0Ca8430E263A098B998E47e0544C2C82B30CbDB1,
-            v3NFTPositionManager: 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364,
-            infiClPositionManager: 0x53C9802F47295979c0E154779eD10fa6af27D7cA,
-            infiBinPositionManager: 0x21015eF9927e06b7Fc19D986A214e449Aa22FF7d
+            infiBinPoolManager: 0x0Ca8430E263A098B998E47e0544C2C82B30CbDB1
         });
 
         unsupported = 0x6879F5C1AdaDDF29892bf650F9C48350C12795D9;
