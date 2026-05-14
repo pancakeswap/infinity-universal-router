@@ -25,8 +25,9 @@ import {CLPositionDescriptorOffChain} from "infinity-periphery/src/pool-cl/CLPos
 import {CLPositionManager} from "infinity-periphery/src/pool-cl/CLPositionManager.sol";
 import {BinPositionManager} from "infinity-periphery/src/pool-bin/BinPositionManager.sol";
 import {Actions} from "infinity-periphery/src/libraries/Actions.sol";
-import {IV3NonfungiblePositionManager} from
-    "infinity-periphery/src/interfaces/external/IV3NonfungiblePositionManager.sol";
+import {
+    IV3NonfungiblePositionManager
+} from "infinity-periphery/src/interfaces/external/IV3NonfungiblePositionManager.sol";
 import {IERC721Permit} from "infinity-periphery/src/interfaces/IERC721Permit.sol";
 import {IPositionManager} from "infinity-periphery/src/interfaces/IPositionManager.sol";
 import {IBinPositionManager} from "infinity-periphery/src/pool-bin/interfaces/IBinPositionManager.sol";
