@@ -31,10 +31,7 @@ contract DeployBsc is DeployUniversalRouter {
             stableInfo: 0xf3A6938945E68193271Cad8d6f79B1f878b16Eb1,
             infiVault: 0x238a358808379702088667322f80aC48bAd5e6c4,
             infiClPoolManager: 0xa0FfB9c1CE1Fe56963B0321B32E7A0302114058b,
-            infiBinPoolManager: 0xC697d2898e0D09264376196696c51D7aBbbAA4a9,
-            v3NFTPositionManager: 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364,
-            infiClPositionManager: 0x55f4c8abA71A1e923edC303eb4fEfF14608cC226,
-            infiBinPositionManager: 0x3D311D6283Dd8aB90bb0031835C8e606349e2850
+            infiBinPoolManager: 0xC697d2898e0D09264376196696c51D7aBbbAA4a9
         });
 
         unsupported = 0x2979d1ea8f04C60423eb7735Cc3ed1BF74b565b8;

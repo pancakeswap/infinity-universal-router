@@ -58,10 +58,7 @@ contract UniversalRouterTest is Test, Permit2SignatureHelpers, DeployPermit2 {
             stableInfo: address(0),
             infiVault: address(0),
             infiClPoolManager: address(0),
-            infiBinPoolManager: address(0),
-            v3NFTPositionManager: address(0),
-            infiClPositionManager: address(0),
-            infiBinPositionManager: address(0)
+            infiBinPoolManager: address(0)
         });
         router = new UniversalRouter(params);
         assertEq(router.owner(), address(this));

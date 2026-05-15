@@ -44,8 +44,8 @@ abstract contract V3SwapRouter is RouterImmutables, Permit2Payments, IPancakeV3S
 
         if (
             UniversalRouterHelper.computePoolAddress(
-                PANCAKESWAP_V3_DEPLOYER, PANCAKESWAP_V3_POOL_INIT_CODE_HASH, tokenIn, tokenOut, fee
-            ) != msg.sender
+                    PANCAKESWAP_V3_DEPLOYER, PANCAKESWAP_V3_POOL_INIT_CODE_HASH, tokenIn, tokenOut, fee
+                ) != msg.sender
         ) revert V3InvalidCaller();
 
         (bool isExactInput, uint256 amountToPay) =
@@ -150,15 +150,16 @@ abstract contract V3SwapRouter is RouterImmutables, Permit2Payments, IPancakeV3S
         zeroForOne = isExactIn ? tokenIn < tokenOut : tokenOut < tokenIn;
 
         (amount0Delta, amount1Delta) = IPancakeV3Pool(
-            UniversalRouterHelper.computePoolAddress(
-                PANCAKESWAP_V3_DEPLOYER, PANCAKESWAP_V3_POOL_INIT_CODE_HASH, tokenIn, tokenOut, fee
+                UniversalRouterHelper.computePoolAddress(
+                    PANCAKESWAP_V3_DEPLOYER, PANCAKESWAP_V3_POOL_INIT_CODE_HASH, tokenIn, tokenOut, fee
+                )
             )
-        ).swap(
-            recipient,
-            zeroForOne,
-            amount,
-            (zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1),
-            abi.encode(path, payer)
-        );
+            .swap(
+                recipient,
+                zeroForOne,
+                amount,
+                (zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1),
+                abi.encode(path, payer)
+            );
     }
 }

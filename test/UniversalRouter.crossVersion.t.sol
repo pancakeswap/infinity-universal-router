@@ -25,8 +25,9 @@ import {CLPositionDescriptorOffChain} from "infinity-periphery/src/pool-cl/CLPos
 import {CLPositionManager} from "infinity-periphery/src/pool-cl/CLPositionManager.sol";
 import {BinPositionManager} from "infinity-periphery/src/pool-bin/BinPositionManager.sol";
 import {Actions} from "infinity-periphery/src/libraries/Actions.sol";
-import {IV3NonfungiblePositionManager} from
-    "infinity-periphery/src/interfaces/external/IV3NonfungiblePositionManager.sol";
+import {
+    IV3NonfungiblePositionManager
+} from "infinity-periphery/src/interfaces/external/IV3NonfungiblePositionManager.sol";
 import {IERC721Permit} from "infinity-periphery/src/interfaces/IERC721Permit.sol";
 import {IPositionManager} from "infinity-periphery/src/interfaces/IPositionManager.sol";
 import {IBinPositionManager} from "infinity-periphery/src/pool-bin/interfaces/IBinPositionManager.sol";
@@ -133,10 +134,7 @@ contract UniversalRouterCrossVersionTest is BasePancakeSwapInfinity, OldVersionH
             stableInfo: address(0),
             infiVault: address(vault),
             infiClPoolManager: address(clPoolManager),
-            infiBinPoolManager: address(binPoolManager),
-            v3NFTPositionManager: address(v3Nfpm),
-            infiClPositionManager: address(clPositionManager),
-            infiBinPositionManager: address(binPositionManager)
+            infiBinPoolManager: address(binPoolManager)
         });
         router = new UniversalRouter(params);
         _approvePermit2ForCurrency(address(this), currency0, address(router), permit2);
@@ -516,18 +514,12 @@ contract UniversalRouterCrossVersionTest is BasePancakeSwapInfinity, OldVersionH
         // prep position manager action to mint liquidity
         Plan memory planner = Planner.init();
         planner.add(Actions.CL_MINT_POSITION, abi.encode(key, -120, 120, 1000 ether, 10 ether, 10 ether, recipient, ""));
-        planner.add(Actions.SETTLE, abi.encode(key.currency0, ActionConstants.OPEN_DELTA, false)); // deduct from universal router
-        planner.add(Actions.SETTLE, abi.encode(key.currency1, ActionConstants.OPEN_DELTA, false)); // deduct from universal router
+        planner.add(Actions.SETTLE, abi.encode(key.currency0, ActionConstants.OPEN_DELTA, false)); // pay from position manager balance
+        planner.add(Actions.SETTLE, abi.encode(key.currency1, ActionConstants.OPEN_DELTA, false)); // pay from position manager balance
         planner.add(Actions.SWEEP, abi.encode(key.currency0, recipient));
         planner.add(Actions.SWEEP, abi.encode(key.currency1, recipient));
 
-        // prep universal router actions
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.INFI_CL_POSITION_CALL)));
-        bytes[] memory inputs = new bytes[](1);
-        inputs[0] =
-            abi.encodePacked(IPositionManager.modifyLiquidities.selector, abi.encode(planner.encode(), block.timestamp));
-
-        router.execute(commands, inputs);
+        clPositionManager.modifyLiquidities(planner.encode(), block.timestamp);
     }
 
     function _deal(address token, address to, uint256 amount) internal {
