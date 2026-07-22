@@ -1,6 +1,6 @@
 {
-  "test_infiBinSwap_ExactInSingle_NativeIn": "128863",
-  "test_infiBinSwap_ExactInSingle_NativeOut": "117561",
-  "test_infiBinSwap_ExactInSingle_NativeOut_RouterRecipient": "117850",
-  "test_infiBinSwap_infiInitializeBinPool": "132794"
+  "test_infiBinSwap_ExactInSingle_NativeIn": "129146",
+  "test_infiBinSwap_ExactInSingle_NativeOut": "117925",
+  "test_infiBinSwap_ExactInSingle_NativeOut_RouterRecipient": "118278",
+  "test_infiBinSwap_infiInitializeBinPool": "132834"
 }
