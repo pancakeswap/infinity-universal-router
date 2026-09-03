@@ -21,6 +21,7 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
     error StableTooLittleReceived();
     error StableTooMuchRequested();
     error StableInvalidPath();
+    error StableInvalidAmountIn();
 
     address public stableSwapFactory;
     address public stableSwapInfo;
@@ -47,12 +48,14 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
 
     /// @dev if a single hop, path would be of size 2, and flag would be of size 1
     /// if 2 hops, path would be of size 3, and flag would be of size 2
+    /// @dev at least one hop is required: a path of size 1 would pass the length check, skip the
+    /// loop entirely and return amountIn as amtOut, turning the swap into a plain token transfer
     /// @return amtOut The amount of output tokens received after the swap
     function _stableSwap(address[] calldata path, uint256[] calldata flag, uint256 amountIn)
         private
         returns (uint256 amtOut)
     {
-        if (path.length - 1 != flag.length) revert StableInvalidPath();
+        if (path.length < 2 || path.length - 1 != flag.length) revert StableInvalidPath();
 
         uint256 outputTokenBal;
         for (uint256 i; i < flag.length; i++) {
@@ -75,7 +78,8 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
 
     /// @notice Performs a PancakeSwap stable exact input swap
     /// @param recipient The recipient of the output tokens
-    /// @param amountIn The amount of input tokens for the trade
+    /// @param amountIn The amount of input tokens for the trade, or ActionConstants.CONTRACT_BALANCE
+    /// to swap the router's entire balance of path[0]
     /// @param amountOutMinimum The minimum desired amount of output tokens
     /// @param path The path of the trade as an array of token addresses
     /// @param flag token amount in a stable swap pool. 2 for 2pool, 3 for 3pool
@@ -88,13 +92,17 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         uint256[] calldata flag,
         address payer
     ) internal {
-        if (amountIn != Constants.ALREADY_PAID && amountIn != ActionConstants.CONTRACT_BALANCE) {
+        if (amountIn == ActionConstants.CONTRACT_BALANCE) {
+            amountIn = ERC20(path[0]).balanceOf(address(this));
+        } else if (amountIn != Constants.ALREADY_PAID) {
             payOrPermit2Transfer(path[0], payer, address(this), amountIn);
         }
 
-        if (amountIn == ActionConstants.CONTRACT_BALANCE) {
-            amountIn = ERC20(path[0]).balanceOf(address(this));
-        }
+        /// @dev Constants.ALREADY_PAID (0) is not a valid amount here: a stable pool pulls its input
+        /// via transferFrom, so there is no "pool already funded" flow to piggyback on. Callers that
+        /// want to trade the router's whole balance must pass ActionConstants.CONTRACT_BALANCE.
+        /// Reverting also stops an empty CONTRACT_BALANCE from silently swapping nothing.
+        if (amountIn == 0) revert StableInvalidAmountIn();
 
         uint256 amountOut = _stableSwap(path, flag, amountIn);
         if (amountOut < amountOutMinimum) revert StableTooLittleReceived();
@@ -120,7 +128,11 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
     ) internal {
         payOrPermit2Transfer(path[0], payer, address(this), amountIn);
 
-        _stableSwap(path, flag, amountIn);
+        /// @dev amountIn is quoted off the pool via getStableAmountsIn, so the forward swap is
+        /// expected to yield at least amountOut. Enforce it rather than paying amountOut out of
+        /// whatever balance the router happens to hold.
+        uint256 amtOut = _stableSwap(path, flag, amountIn);
+        if (amtOut < amountOut) revert StableTooLittleReceived();
 
         if (recipient != address(this)) pay(path[path.length - 1], recipient, amountOut);
     }
