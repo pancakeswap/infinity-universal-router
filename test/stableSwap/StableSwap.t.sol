@@ -154,6 +154,27 @@ abstract contract StableSwapTest is Test {
         assertGt(ERC20(token1()).balanceOf(FROM), BALANCE); // token1 received
     }
 
+    function test_stableSwap_ExactInput0For1_Twice_FromRouter() public {
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN))
+        );
+        deal(token0(), address(router), AMOUNT * 2);
+
+        address[] memory path = new address[](2);
+        path[0] = token0();
+        path[1] = token1();
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        // recipient, amountIn, amountOutMin, path, flag, payerIsUser
+        bytes[] memory inputs = new bytes[](2);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path, flag(), false);
+        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path, flag(), false);
+
+        router.execute(commands, inputs);
+        assertEq(ERC20(token0()).balanceOf(FROM), BALANCE); // no token0 taken from user, taken from router
+        assertGt(ERC20(token1()).balanceOf(FROM), BALANCE); // token1 received
+    }
+
     function test_stableSwap_exactInput1For0FromRouter() public {
         bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
         deal(token1(), address(router), AMOUNT);
@@ -246,6 +267,107 @@ abstract contract StableSwapTest is Test {
         router.execute(commands, inputs);
         assertGe(ERC20(token0()).balanceOf(FROM), BALANCE + AMOUNT);
         assertEq(ERC20(token1()).balanceOf(FROM), BALANCE); // no token1 taken from user, taken from router
+    }
+
+    function test_stableSwap_exactOutput1For0FromRouter_Twice_FromRouter() public {
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_OUT))
+        );
+        deal(token1(), address(router), BALANCE * 2);
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        address[] memory path = new address[](2);
+        path[0] = token1();
+        path[1] = token0();
+
+        bytes[] memory inputs = new bytes[](2);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, type(uint256).max, path, flag(), false);
+        inputs[1] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, type(uint256).max, path, flag(), false);
+
+        router.execute(commands, inputs);
+        assertGe(ERC20(token0()).balanceOf(FROM), BALANCE + AMOUNT * 2);
+        assertEq(ERC20(token1()).balanceOf(FROM), BALANCE); // no token1 taken from user, taken from router
+    }
+
+    /// @dev `amountIn` of 0 (Constants.ALREADY_PAID) used to mean "swap the router's whole balance".
+    /// Now that the router respects `amountIn`, a 0 would silently swap nothing, so it must revert.
+    function test_stableSwap_ExactInput_RevertIfAmountInZero() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        deal(token0(), address(router), AMOUNT);
+
+        address[] memory path = new address[](2);
+        path[0] = token0();
+        path[1] = token1();
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, Constants.ALREADY_PAID, 0, path, flag(), false);
+
+        vm.expectRevert(StableSwapRouter.StableInvalidAmountIn.selector);
+        router.execute(commands, inputs);
+
+        // the router still holds the tokens, nothing was swapped away
+        assertEq(ERC20(token0()).balanceOf(address(router)), AMOUNT);
+    }
+
+    /// @dev CONTRACT_BALANCE on an empty router would resolve to 0 and swap nothing
+    function test_stableSwap_ExactInput_RevertIfContractBalanceEmpty() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        assertEq(ERC20(token0()).balanceOf(address(router)), 0);
+
+        address[] memory path = new address[](2);
+        path[0] = token0();
+        path[1] = token1();
+
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, ActionConstants.CONTRACT_BALANCE, 0, path, flag(), false);
+
+        vm.expectRevert(StableSwapRouter.StableInvalidAmountIn.selector);
+        router.execute(commands, inputs);
+    }
+
+    /// @dev a path of size 1 passes `path.length - 1 == flag.length` but performs no hop at all,
+    /// which would make the swap return amountIn untouched and pay out path[0] as if it were output
+    function test_stableSwap_ExactInput_RevertIfPathHasNoHop() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        deal(token0(), address(router), AMOUNT);
+
+        address[] memory path = new address[](1);
+        path[0] = token0();
+        uint256[] memory noFlag = new uint256[](0);
+
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, ActionConstants.CONTRACT_BALANCE, 0, path, noFlag, false);
+
+        vm.expectRevert(StableSwapRouter.StableInvalidPath.selector);
+        router.execute(commands, inputs);
+
+        // the router balance cannot be transferred out through the stable swap command
+        assertEq(ERC20(token0()).balanceOf(address(router)), AMOUNT);
+    }
+
+    /// @dev a donation sitting on the router must not be added to the amountIn pulled from the user.
+    /// This is the payerIsUser = true half of the donation case; StableSwapMockTest covers the
+    /// payerIsUser = false half, where the swap input comes from the router's own balance.
+    function test_stableSwap_ExactInput_FromUser_DonationDoesNotInflateAmountIn() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        uint256 donation = AMOUNT * 5;
+        deal(token0(), address(router), donation);
+
+        address[] memory path = new address[](2);
+        path[0] = token0();
+        path[1] = token1();
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path, flag(), true);
+
+        router.execute(commands, inputs);
+
+        // exactly amountIn was taken from the user and the donation is still sitting on the router
+        assertEq(ERC20(token0()).balanceOf(FROM), BALANCE - AMOUNT);
+        assertEq(ERC20(token0()).balanceOf(address(router)), donation);
+        assertEq(ERC20(token1()).balanceOf(address(router)), 0);
     }
 
     function token0() internal virtual returns (address);

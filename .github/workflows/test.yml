@@ -25,5 +25,6 @@ jobs:
         run: forge test -vvv --isolate
         env:
           FOUNDRY_PROFILE: ci
+          ARB_FORK_URL: ${{ secrets.ARB_FORK_URL }}
           FORK_URL: ${{ secrets.FORK_URL }}
           TESTNET_FORK_URL: ${{ secrets.TESTNET_FORK_URL }}
