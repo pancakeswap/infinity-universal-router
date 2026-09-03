@@ -57,8 +57,9 @@ abstract contract V2SwapRouter is RouterImmutables, Permit2Payments {
         address[] calldata path,
         address payer
     ) internal {
-        address firstPair =
-            UniversalRouterHelper.pairFor(PANCAKESWAP_V2_FACTORY, PANCAKESWAP_V2_PAIR_INIT_CODE_HASH, path[0], path[1]);
+        address firstPair = UniversalRouterHelper.pairFor(
+            PANCAKESWAP_V2_FACTORY, PANCAKESWAP_V2_PAIR_INIT_CODE_HASH, path[0], path[1]
+        );
         if (
             amountIn != Constants.ALREADY_PAID // amountIn of 0 to signal that the pair already has the tokens
         ) {

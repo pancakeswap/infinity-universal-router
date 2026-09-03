@@ -32,10 +32,7 @@ contract DeployBscTestnet is DeployUniversalRouter {
             stableInfo: 0x0A548d59D04096Bc01206D58C3D63c478e1e06dB,
             infiVault: 0x2CdB3EC82EE13d341Dc6E73637BE0Eab79cb79dD,
             infiClPoolManager: 0x36A12c70c9Cf64f24E89ee132BF93Df2DCD199d4,
-            infiBinPoolManager: 0xe71d2e0230cE0765be53A8A1ee05bdACF30F296B,
-            v3NFTPositionManager: 0x427bF5b37357632377eCbEC9de3626C71A5396c1,
-            infiClPositionManager: 0x77DedB52EC6260daC4011313DBEE09616d30d122,
-            infiBinPositionManager: 0x68B834232da911c787bcF782CED84ec5d36909a7
+            infiBinPoolManager: 0xe71d2e0230cE0765be53A8A1ee05bdACF30F296B
         });
 
         unsupported = 0xe4da88F38C11C1450c720b8aDeDd94956610a4e5;

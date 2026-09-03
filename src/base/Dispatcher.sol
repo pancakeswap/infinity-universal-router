@@ -7,7 +7,6 @@ import {InfinitySwapRouter} from "../modules/pancakeswap/infinity/InfinitySwapRo
 import {StableSwapRouter} from "../modules/pancakeswap/StableSwapRouter.sol";
 import {Payments} from "../modules/Payments.sol";
 import {RouterImmutables} from "../base/RouterImmutables.sol";
-import {V3ToInfinityMigrator} from "../modules/V3ToInfinityMigrator.sol";
 import {BytesLib} from "../libraries/BytesLib.sol";
 import {Commands} from "../libraries/Commands.sol";
 import {Lock} from "./Lock.sol";
@@ -22,15 +21,7 @@ import {IBinPoolManager} from "infinity-core/src/pool-bin/interfaces/IBinPoolMan
 
 /// @title Decodes and Executes Commands
 /// @notice Called by the UniversalRouter contract to efficiently decode and execute a singular command
-abstract contract Dispatcher is
-    Payments,
-    V2SwapRouter,
-    V3SwapRouter,
-    StableSwapRouter,
-    InfinitySwapRouter,
-    V3ToInfinityMigrator,
-    Lock
-{
+abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, StableSwapRouter, InfinitySwapRouter, Lock {
     using BytesLib for bytes;
     using CalldataDecoder for bytes;
 
@@ -121,14 +112,15 @@ abstract contract Dispatcher is
                             permitBatch := add(inputs.offset, calldataload(inputs.offset))
                         }
                         bytes calldata data = inputs.toBytes(1);
-                        (success, output) = address(PERMIT2).call(
-                            abi.encodeWithSignature(
-                                "permit(address,((address,uint160,uint48,uint48)[],address,uint256),bytes)",
-                                msgSender(),
-                                permitBatch,
-                                data
-                            )
-                        );
+                        (success, output) = address(PERMIT2)
+                            .call(
+                                abi.encodeWithSignature(
+                                    "permit(address,((address,uint160,uint48,uint48)[],address,uint256),bytes)",
+                                    msgSender(),
+                                    permitBatch,
+                                    data
+                                )
+                            );
                         return (success, output);
                     } else if (command == Commands.SWEEP) {
                         // equivalent:  abi.decode(inputs, (address, address, uint256))
@@ -213,14 +205,15 @@ abstract contract Dispatcher is
                             permitSingle := inputs.offset
                         }
                         bytes calldata data = inputs.toBytes(6); // PermitSingle takes first 6 slots (0..5)
-                        (success, output) = address(PERMIT2).call(
-                            abi.encodeWithSignature(
-                                "permit(address,((address,uint160,uint48,uint48),address,uint256),bytes)",
-                                msgSender(),
-                                permitSingle,
-                                data
-                            )
-                        );
+                        (success, output) = address(PERMIT2)
+                            .call(
+                                abi.encodeWithSignature(
+                                    "permit(address,((address,uint160,uint48,uint48),address,uint256),bytes)",
+                                    msgSender(),
+                                    permitSingle,
+                                    data
+                                )
+                            );
                         return (success, output);
                     } else if (command == Commands.WRAP_ETH) {
                         // equivalent: abi.decode(inputs, (address, uint256))
@@ -275,16 +268,6 @@ abstract contract Dispatcher is
                     // pass the calldata provided to InfinitySwapRouter._executeActions (defined in BaseActionsRouter)
                     _executeActions(inputs);
                     return (success, output);
-                    // This contract MUST be approved to spend the token since its going to be doing the call on the position manager
-                } else if (command == Commands.V3_POSITION_MANAGER_PERMIT) {
-                    _checkV3PermitCall(inputs);
-                    (success, output) = address(V3_POSITION_MANAGER).call(inputs);
-                    return (success, output);
-                } else if (command == Commands.V3_POSITION_MANAGER_CALL) {
-                    _checkV3PositionManagerCall(inputs, msgSender());
-                    /// @dev ensure there's follow-up action if v3 position's removed token are sent to router contract
-                    (success, output) = address(V3_POSITION_MANAGER).call(inputs);
-                    return (success, output);
                 } else if (command == Commands.INFI_CL_INITIALIZE_POOL) {
                     // equivalent: abi.decode(inputs, (PoolKey, uint160)) where PoolKey is
                     // (Currency currency0, Currency currency1, IHooks hooks, IPoolManager poolManager, uint24 fee, bytes32 parameters)
@@ -307,14 +290,6 @@ abstract contract Dispatcher is
                     }
                     (success, output) =
                         address(binPoolManager).call(abi.encodeCall(IBinPoolManager.initialize, (poolKey, activeId)));
-                } else if (command == Commands.INFI_CL_POSITION_CALL) {
-                    _checkInfiClPositionManagerCall(inputs);
-                    (success, output) = address(INFI_CL_POSITION_MANAGER).call{value: address(this).balance}(inputs);
-                    return (success, output);
-                } else if (command == Commands.INFI_BIN_POSITION_CALL) {
-                    _checkInfiBinPositionManagerCall(inputs);
-                    (success, output) = address(INFI_BIN_POSITION_MANAGER).call{value: address(this).balance}(inputs);
-                    return (success, output);
                 } else {
                     // placeholder area for commands 0x15-0x20
                     revert InvalidCommandType(command);

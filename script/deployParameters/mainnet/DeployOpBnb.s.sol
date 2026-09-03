@@ -32,10 +32,7 @@ contract DeployOpbnb is DeployUniversalRouter {
             stableInfo: UNSUPPORTED_PROTOCOL,
             infiVault: UNSUPPORTED_PROTOCOL,
             infiClPoolManager: UNSUPPORTED_PROTOCOL,
-            infiBinPoolManager: UNSUPPORTED_PROTOCOL,
-            v3NFTPositionManager: UNSUPPORTED_PROTOCOL,
-            infiClPositionManager: UNSUPPORTED_PROTOCOL,
-            infiBinPositionManager: UNSUPPORTED_PROTOCOL
+            infiBinPoolManager: UNSUPPORTED_PROTOCOL
         });
 
         unsupported = 0xFE6508f0015C778Bdcc1fB5465bA5ebE224C9912;

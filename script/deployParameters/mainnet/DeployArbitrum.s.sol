@@ -31,10 +31,7 @@ contract DeployArbitrum is DeployUniversalRouter {
             stableInfo: 0x58B2F00f74a1877510Ec37b22f116Bf5D63Ab1b0,
             infiVault: UNSUPPORTED_PROTOCOL,
             infiClPoolManager: UNSUPPORTED_PROTOCOL,
-            infiBinPoolManager: UNSUPPORTED_PROTOCOL,
-            v3NFTPositionManager: UNSUPPORTED_PROTOCOL,
-            infiClPositionManager: UNSUPPORTED_PROTOCOL,
-            infiBinPositionManager: UNSUPPORTED_PROTOCOL
+            infiBinPoolManager: UNSUPPORTED_PROTOCOL
         });
 
         unsupported = 0x64D74e1EAAe3176744b5767b93B7Bee39Cf7898F;
