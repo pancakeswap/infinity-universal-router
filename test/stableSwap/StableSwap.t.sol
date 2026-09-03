@@ -346,6 +346,30 @@ abstract contract StableSwapTest is Test {
         assertEq(ERC20(token0()).balanceOf(address(router)), AMOUNT);
     }
 
+    /// @dev a donation sitting on the router must not be added to the amountIn pulled from the user.
+    /// This is the payerIsUser = true half of the donation case; StableSwapMockTest covers the
+    /// payerIsUser = false half, where the swap input comes from the router's own balance.
+    function test_stableSwap_ExactInput_FromUser_DonationDoesNotInflateAmountIn() public {
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        uint256 donation = AMOUNT * 5;
+        deal(token0(), address(router), donation);
+
+        address[] memory path = new address[](2);
+        path[0] = token0();
+        path[1] = token1();
+
+        // equivalent: abi.decode(inputs, (address, uint256, uint256, address[], uint256[], bool)
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = abi.encode(ActionConstants.MSG_SENDER, AMOUNT, 0, path, flag(), true);
+
+        router.execute(commands, inputs);
+
+        // exactly amountIn was taken from the user and the donation is still sitting on the router
+        assertEq(ERC20(token0()).balanceOf(FROM), BALANCE - AMOUNT);
+        assertEq(ERC20(token0()).balanceOf(address(router)), donation);
+        assertEq(ERC20(token1()).balanceOf(address(router)), 0);
+    }
+
     function token0() internal virtual returns (address);
     function token1() internal virtual returns (address);
     function flag() internal virtual returns (uint256[] memory);

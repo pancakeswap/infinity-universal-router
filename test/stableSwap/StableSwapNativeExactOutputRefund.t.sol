@@ -93,14 +93,14 @@ contract StableSwapNativeExactOutputRefundTest is Test {
         vm.prank(FROM);
         router.execute{value: amountInMaximum}(commands, inputs);
 
-        assertEq(BNBX.balanceOf(FROM) - outputBefore, AMOUNT_OUT, "user receives exactly the requested output");
+        assertGe(BNBX.balanceOf(FROM) - outputBefore, AMOUNT_OUT, "user receives at least the requested output");
 
         // the fix: only the quoted input is consumed, the untouched headroom is unwrapped back
         assertEq(nativeBefore - FROM.balance, quotedAmountIn, "only the quoted input is spent");
         assertEq(WETH9.balanceOf(address(router)), 0, "no wrapped input stranded on the router");
 
-        // the overswapped output that used to be stranded is gone; only get_dx rounding dust is left
-        assertLt(BNBX.balanceOf(address(router)), AMOUNT_OUT / 1000, "no overswapped output residue");
+        // no output is retained at all: the measured amount is paid out, surplus included
+        assertEq(BNBX.balanceOf(address(router)), 0, "no output left on the router");
 
         // and therefore a public SWEEP no longer collects the user's slippage headroom
         bytes memory sweepCommands = abi.encodePacked(bytes1(uint8(Commands.SWEEP)));
@@ -110,7 +110,7 @@ contract StableSwapNativeExactOutputRefundTest is Test {
         vm.prank(ATTACKER);
         router.execute(sweepCommands, sweepInputs);
 
-        assertLt(BNBX.balanceOf(ATTACKER), AMOUNT_OUT / 1000, "attacker cannot steal overswapped output");
+        assertEq(BNBX.balanceOf(ATTACKER), 0, "attacker has nothing to steal");
     }
 
     function _quoteAmountIn(uint256 amountOut) internal view returns (uint256 amountIn) {
