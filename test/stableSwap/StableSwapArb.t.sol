@@ -48,10 +48,7 @@ contract StableSwapArbTest is Test {
             stableInfo: address(STABLE_INFO),
             infiVault: address(0),
             infiClPoolManager: address(0),
-            infiBinPoolManager: address(0),
-            v3NFTPositionManager: address(0),
-            infiClPositionManager: address(0),
-            infiBinPositionManager: address(0)
+            infiBinPoolManager: address(0)
         });
         router = new UniversalRouter(params);
 

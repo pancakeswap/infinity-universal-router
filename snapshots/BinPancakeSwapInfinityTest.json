@@ -3,7 +3,7 @@
   "test_infiBinSwap_ExactIn_MultiHop": "175892",
   "test_infiBinSwap_ExactIn_SingleHop": "145923",
   "test_infiBinSwap_ExactOutSingle": "148195",
-  "test_infiBinSwap_ExactOut_MultiHop": "179796",
-  "test_infiBinSwap_ExactOut_SingleHop": "150323",
+  "test_infiBinSwap_ExactOut_MultiHop": "179788",
+  "test_infiBinSwap_ExactOut_SingleHop": "150319",
   "test_infiBinSwap_InitializeBinPool": "152974"
 }

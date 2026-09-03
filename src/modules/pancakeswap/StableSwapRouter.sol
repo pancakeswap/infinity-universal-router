@@ -134,7 +134,10 @@ abstract contract StableSwapRouter is RouterImmutables, Permit2Payments, Ownable
         uint256 amtOut = _stableSwap(path, flag, amountIn);
         if (amtOut < amountOut) revert StableTooLittleReceived();
 
-        if (recipient != address(this)) pay(path[path.length - 1], recipient, amountOut);
+        /// @dev pay out the measured output rather than the requested amountOut: any surplus the
+        /// pool returned belongs to the payer, and leaving it here makes it sweepable by anyone.
+        /// This mirrors the exact input path, which also pays the measured amount.
+        if (recipient != address(this)) pay(path[path.length - 1], recipient, amtOut);
     }
 
     function stableSwapExactOutputAmountIn(
