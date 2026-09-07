@@ -24,6 +24,7 @@ import {CLPositionDescriptorOffChain} from "infinity-periphery/src/pool-cl/CLPos
 import {CLPositionManager} from "infinity-periphery/src/pool-cl/CLPositionManager.sol";
 import {Actions} from "infinity-periphery/src/libraries/Actions.sol";
 import {ICLRouterBase} from "infinity-periphery/src/pool-cl/interfaces/ICLRouterBase.sol";
+import {IInfinityRouter} from "infinity-periphery/src/interfaces/IInfinityRouter.sol";
 import {LiquidityAmounts} from "infinity-periphery/src/pool-cl/libraries/LiquidityAmounts.sol";
 import {PathKey} from "infinity-periphery/src/libraries/PathKey.sol";
 import {CLPool} from "infinity-core/src/pool-cl/libraries/CLPool.sol";
@@ -359,6 +360,78 @@ contract CLPancakeSwapInfinityTest is BasePancakeSwapInfinity {
         vm.snapshotGasLastCall("test_infiClSwap_ExactOut_MultiHop");
         assertEq(token0.balanceOf(alice), 9939608377607349);
         assertEq(token2.balanceOf(alice), 0.01 ether);
+    }
+
+    /// @dev exact output is all-or-nothing: poolKey0 only holds ~10 ether of each token within
+    //       tick(-120, 120), so a 20 ether output request runs the pool dry before the price limit
+    //       and must revert rather than silently deliver a partial fill
+    function test_infiClSwap_ExactOutSingle_Unfilled() public {
+        uint128 amountOut = 20 ether;
+        MockERC20(Currency.unwrap(currency0)).mint(alice, amountOut * 2);
+        vm.startPrank(alice);
+
+        // prepare infinity swap input, amountInMaximum unbounded so TooMuchRequested cannot mask the shortfall
+        ICLRouterBase.CLSwapExactOutputSingleParams memory params =
+            ICLRouterBase.CLSwapExactOutputSingleParams(poolKey0, true, amountOut, type(uint128).max, "");
+        plan = Planner.init().add(Actions.CL_SWAP_EXACT_OUT_SINGLE, abi.encode(params));
+        bytes memory data = plan.finalizeSwap(poolKey0.currency0, poolKey0.currency1, ActionConstants.MSG_SENDER);
+
+        // call infi_swap
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.INFI_SWAP)));
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = data;
+
+        /// @dev INFI_SWAP calls _executeActions directly, so the router bubbles the revert as-is
+        vm.expectRevert(
+            abi.encodeWithSelector(IInfinityRouter.ExactOutputUnfilled.selector, amountOut, 9999999999999999999)
+        );
+        router.execute(commands, inputs);
+    }
+
+    /// @dev every hop of an exact output swap must fill. Here the final hop (poolKey1) fills the
+    //       9.99 ether of token2, but it consumes ~10.08 ether of token1 which poolKey0 cannot
+    //       deliver -- so the shortfall reported is the intermediate hop's, not the requested output
+    function test_infiClSwap_ExactOut_MultiHop_IntermediateHopUnfilled() public {
+        uint128 amountOut = 9.99 ether;
+        MockERC20(Currency.unwrap(currency0)).mint(alice, 100 ether);
+        vm.startPrank(alice);
+
+        // prepare infinity swap input
+        PathKey[] memory path = new PathKey[](2);
+        path[0] = PathKey({
+            intermediateCurrency: currency0,
+            fee: poolKey0.fee,
+            hooks: poolKey0.hooks,
+            hookData: "",
+            poolManager: poolKey0.poolManager,
+            parameters: poolKey0.parameters
+        });
+        path[1] = PathKey({
+            intermediateCurrency: currency1,
+            fee: poolKey1.fee,
+            hooks: poolKey1.hooks,
+            hookData: "",
+            poolManager: poolKey1.poolManager,
+            parameters: poolKey1.parameters
+        });
+        ICLRouterBase.CLSwapExactOutputParams memory params =
+            ICLRouterBase.CLSwapExactOutputParams(currency2, path, amountOut, type(uint128).max);
+        plan = Planner.init().add(Actions.CL_SWAP_EXACT_OUT, abi.encode(params));
+        bytes memory data = plan.finalizeSwap(currency0, currency2, ActionConstants.MSG_SENDER);
+
+        // call infi_swap
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.INFI_SWAP)));
+        bytes[] memory inputs = new bytes[](1);
+        inputs[0] = data;
+
+        /// @dev token1 amount poolKey1 required, vs what poolKey0 could actually deliver
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInfinityRouter.ExactOutputUnfilled.selector, 10080297579513506420, 9999999999999999999
+            )
+        );
+        router.execute(commands, inputs);
+        assertEq(token2.balanceOf(alice), 0);
     }
 
     /// @dev add 10 ether of token0, token1 at tick(-120, 120) to poolKey
