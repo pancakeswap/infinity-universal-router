@@ -142,8 +142,9 @@ contract StableSwapMultiHop is Test {
     }
 
     function test_stableSwap_ExactInput0For1_DualAction_FromRouter() public {
-        bytes memory commands =
-            abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN))
+        );
 
         deal(address(USDC), address(router), AMOUNT);
 
@@ -170,8 +171,9 @@ contract StableSwapMultiHop is Test {
     }
 
     function test_stableSwap_ExactInput0For1_DualAction_FromUser() public {
-        bytes memory commands =
-            abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN))
+        );
 
         uint256[] memory flag = new uint256[](1);
         flag[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
@@ -195,8 +197,9 @@ contract StableSwapMultiHop is Test {
     }
 
     function test_stableSwap_ExactInput0For1_SamePath_FromRouter() public {
-        bytes memory commands =
-            abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN))
+        );
 
         deal(address(USDC), address(router), AMOUNT * 4);
 
@@ -219,8 +222,9 @@ contract StableSwapMultiHop is Test {
     }
 
     function test_stableSwap_ExactInput0For1_SamePath_FromUser() public {
-        bytes memory commands =
-            abi.encodePacked(bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(
+            bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN)), bytes1(uint8(Commands.STABLE_SWAP_EXACT_IN))
+        );
 
         uint256[] memory flag = new uint256[](1);
         flag[0] = 2; // 2 is the flag to indicate StableSwapTwoPool
