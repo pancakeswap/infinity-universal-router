@@ -6,16 +6,16 @@ import {RouterParameters} from "../../../src/base/RouterImmutables.sol";
 
 /**
  * Step 1: Deploy
- * forge script script/deployParameters/mainnet/DeployRobinhood.s.sol:DeployRobinhood -vvv \
+ * forge script script/deployParameters/testnet/DeployArcTestnet.s.sol:DeployArcTestnet -vvv \
  *     --rpc-url $RPC_URL \
  *     --broadcast \
  *     --slow \
  *     --verify
  */
-contract DeployRobinhood is DeployUniversalRouter {
+contract DeployArcTestnet is DeployUniversalRouter {
     /// @notice contract address will be based on deployment salt
     function getDeploymentSalt() public pure override returns (bytes32) {
-        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/1.0.0");
+        return keccak256("INFINITY-UNIVERSAL-ROUTER/UniversalRouter/1.0.1");
     }
 
     function setUp() public override {
